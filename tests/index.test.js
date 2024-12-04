@@ -753,6 +753,10 @@ describe("WebSocket tests", async()=>{
   let ws2;
   let ws1Messages = [];
   let ws2Messages = [];
+  let userX;
+  let userY;
+  let adminX;
+  let adminY;
 
   function waitforandpoplatestMessages(messageArr){
     return new Promise(resolve=>{
@@ -863,18 +867,19 @@ describe("WebSocket tests", async()=>{
   async function setupws(){
 
     ws1 = new WebSocket(WS_URL);
-    ws2 = new WebSocket(WS_URL);
 
     await new Promise(r=>{
       ws1.onopen = r;
     })
 
-    await new Promise(r =>{
-      ws2.onopen = r
-    })
-
     ws1.onmessage((event)=>{
       ws1Messages.push(JSON.parse(event));
+    })
+
+    ws2 = new WebSocket(WS_URL);
+
+    await new Promise(r =>{
+      ws2.onopen = r
     })
 
     ws2.onmessage((event)=>{
@@ -890,7 +895,7 @@ describe("WebSocket tests", async()=>{
 
   })
 
-  test("get back ack after joining the space", ()=>{
+  test("get back ack after joining the space",async ()=>{
     ws1.send(JSON.stringify({
       "type": "join",
       "payload": {
@@ -898,6 +903,8 @@ describe("WebSocket tests", async()=>{
         "token": adminToken
       }
     }))
+
+    const message1 = await waitforandpoplatestMessages(ws1Messages);
   
     ws2.send(JSON.stringify({
       "type": "join",
@@ -906,6 +913,86 @@ describe("WebSocket tests", async()=>{
         "token": userToken
       }
     }))
+
+    const message2 = await waitforandpoplatestMessages(ws2Messages);
+    const message3 = await waitforandpoplatestMessages(ws1Messages);
+
+    expect(message1.type).toBe("space-joined")
+    expect(message2.type).toBe("space-joined")
+
+    expect(message1.payload.users.length + message2.payload.users.length).toBe(1);
+    expect(message3.type).toBe("user-join")
+    expect(message3.payload.spawn.x).toBe(message2.payload.spawn.x);
+    expect(message3.payload.spawn.y).toBe(message2.payload.spawn.y);
+    expect(message3.payload.userId).toBe(userId)
+
+    userX = message1.payload.spawn.x;
+    userY = message1.payload.spawn.y;
+    adminX = message2.payload.spawn.x;
+    adminY = message2.payload.spawn.y;
+
+  })
+
+  test("User cannot move across the boundary of wall", ()=>{
+
+    ws1.send(JSON.stringify({
+        "type": "movement",
+        "payload": {
+          x: 20000,
+          y: 30000
+     }
+    }))
+
+    const message1 = waitforandpoplatestMessages(ws1Messages);
+    expect(message1.movement).toBe("movement-rejected")
+    expect(message1.payload.x).toBe(adminX);
+    expect(message1.payload.y).toBe(adminY)
+
+  })
+
+  test("User cannot move two blocks at the same time", ()=>{
+
+    ws1.send(JSON.stringify({
+        "type": "movement",
+        "payload": {
+          x: adminX + 2,
+          y: adminY
+     }
+    }))
+
+    const message1 = waitforandpoplatestMessages(ws1Messages);
+    expect(message1.movement).toBe("movement-rejected")
+    expect(message1.payload.x).toBe(adminX);
+    expect(message1.payload.y).toBe(adminY)
+
+  })
+
+  test("Correct movement broadcast to other user  ", ()=>{
+
+    ws1.send(JSON.stringify({
+        "type": "movement",
+        "payload": {
+          x: adminX + 1,
+          y: adminY,
+          userId : adminId
+     }
+    }))
+
+    const message1 = waitforandpoplatestMessages(ws2Messages);
+    expect(message1.movement).toBe("movement")
+    expect(message1.payload.x).toBe(adminX + 1);
+    expect(message1.payload.y).toBe(adminY)
+
+  })
+
+  test("If the user leaves the other user should notifies the leave event", ()=>{
+
+    ws1.close()
+
+    const message1 = waitforandpoplatestMessages(ws2Messages);
+    expect(message1.movement).toBe("user-left")
+    expect(message1.payload.userId).tobedefined(userId)
+
   })
 
 })
