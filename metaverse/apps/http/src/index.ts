@@ -3,6 +3,7 @@ import { router } from "./routes";
 import client from "@ui/db/client"
 
 const app = express();
+app.use(express.json())
 
 app.use('/api/v1',router)
 
