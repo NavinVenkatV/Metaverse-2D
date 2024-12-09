@@ -1,70 +1,91 @@
-const axios = require("axios")
+const axios2 = require("axios")
 
 const BACKEND_URL = "http://localhost:3000"
 // const WS_URL = "ws://localhost:3001"
 
 //test for HTTP server
+const axios = {
+  post : async(...args)=>{
+    try{
+      const res = await axios2.post(...args)
+      return res;
+    }catch(e){
+      return e.response;
+    }
+  },
+  get : async(...args)=>{
+    try{
+      const res = await axios2.get(...args)
+      return res;
+    }catch(e){
+      return e.response;
+    }
+  }
+}
 
 describe("authorization" , ()=>{
 
   test("User to sign up only once", async()=>{
     const username = "Navin Venkat"+ Math.random();
     const password = "1232123"
-    const res = await axios.post(`${BACKEND_URL}/api/v1/user/signup`,{
+    const res = await axios.post(`${BACKEND_URL}/api/v1/signup`,{
       username,
       password,
       role : "admin"
     })
 
-    expect(res.statusCode.toBe(200))
+    expect(res.status).toBe(200)
 
-    const anotherres = await axios.post(`${DATABASE_URL}/api/v1/user/signup`,{
+    const anotherres = await axios.post(`${BACKEND_URL}/api/v1/signup`,{
       username,
       password,
       role : "admin"
     })
-    expect(anotherres.statusCode.toBe(400))
+    expect(anotherres.status).toBe(400);
 
   })
 
   test("If User's username is empty" , async()=>{
     const username = `Navin-${Math.random()}`
     const password = "1232321";
-    const res = await axios.post(`${BACKEND_URL}/api/v1/user/signup`,{
+    const res = await axios.post(`${BACKEND_URL}/api/v1/signup`,{
       password,
       role : "admin"
     })
 
-    expect(res.statusCode.toBe(400))
+    expect(res.status).toBe(403)
+    
   })
 
   test("User to sign in and returns token" , async()=>{
     const username = `Navin-${Math.random()}`;
     const password = "123232";
 
-    axios.post(`${BACKEND_URL}/api/v1/user/signin`,{
+    await axios.post(`${BACKEND_URL}/api/v1/signup`,{
+      username,
+      password,
+      role : "admin"
+    })
+
+    const res = await axios.post(`${BACKEND_URL}/api/v1/signin`,{
       username,
       password
     })
 
-    const res = axios.post(`${DATABASE_URL}/api/v1/user/signin`,{
-      username,
-      password
-    })
-
-    expect(res.statusCode.toBe(200))
-    expect(res.body.token).tobedefined()
+    expect(res.status).toBe(200)
+    expect(res.data.token).toBeDefined();
   })
 
   test("If User's username and password is incorrect", async()=>{
     const username = `Navin-${Math.random()}`;
     const password = "12323123";
-    const res = await axios.post(`${BACKEND_URL}/api/v1/user/signin`,{
+    const res = await axios.post(`${BACKEND_URL}/api/v1/signin`,{
       username,
       password
   })
 
-    expect(res.statusCode.toBe(403)) // common status code for unauthorized === 403
+  expect(res.status).toBe(403)
+  // common status code for unauthorized === 403
 
   })
 

@@ -25,7 +25,7 @@ export const CreateSpaceSchema = z.object({
 
 export const AddElementSchema = z.object({
     elementId : z.string(),
-    spaveId : z.string(),
+    spaceId : z.string(),
     x : z.number(),
     y : z.number()
 })
@@ -60,6 +60,15 @@ export const CreateMapSchema = z.object({
         y : z.number()
     }))
 })
+
+declare global {
+    namespace Express {
+      export interface Request {
+        role?: "Admin" | "User";
+        userId?: string;
+      }
+    }
+}
 
 
 

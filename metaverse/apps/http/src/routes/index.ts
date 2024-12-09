@@ -60,12 +60,12 @@ router.post('/signin',async (req,res)=>{
         }
         const isvalid = await compare(parsedData.data.password, user?.password)
         if(!isvalid){
-            res.status(403).json({
+            res.status(400).json({
                 message : "Incorrect password"
             })
             return;
         }
-        const token = await jwt.sign({
+        const token = jwt.sign({
             userId : user.id,
             role : user.role
         },JWT_PASSWORD)
