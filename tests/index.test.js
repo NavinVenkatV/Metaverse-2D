@@ -43,7 +43,7 @@ describe("authorization" , ()=>{
     })
     expect(anotherres.status).toBe(400);
 
-  })
+  },10000)
 
   test("If User's username is empty" , async()=>{
     const username = `Navin-${Math.random()}`
@@ -74,7 +74,7 @@ describe("authorization" , ()=>{
 
     expect(res.status).toBe(200)
     expect(res.data.token).toBeDefined();
-  })
+  },10000)
 
   test("If User's username and password is incorrect", async()=>{
     const username = `Navin-${Math.random()}`;
@@ -91,126 +91,134 @@ describe("authorization" , ()=>{
 
 })
 
-// describe("user metadata information" , ()=>{ 
-  
-//   const token = "";
-//   const avatarId = ""
+describe("User metadata endpoint", () => {
+    let token = "";
+    let avatarId = ""
 
-//   beforeAll(async ()=>{
-//     const username = `Navin-${Math.random()}`;
-//     const password = "12323123";
+    beforeAll(async () => {
+       const username = "malathi r"
+       const password = "123456"
 
-//     await axios.post(`${BACKEND_URL}/api/v1/user/signup`,{
-//       username,
-//       password,
-//       type : "admin"
-//     })
+       await axios.post(`${BACKEND_URL}/api/v1/signup`, {
+        username,
+        password,
+        role : "admin"
+       });
 
-//     const res = await axios.post(`${BACKEND_URL}/api/v1/user/signin`,{
-//       username,
-//       password
-//     })
+       const response = await axios.post(`${BACKEND_URL}/api/v1/signin`, {
+        username,
+        password
+       })
 
-//     token = res.data.token  //authentication
+       console.log("Token is :", response.data.token)
+       token = response.data.token
 
-//     const avatarResponse = await axios.post(`${BACKEND_URL}/api/v1/admin/avatar`, {
-//       "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQm3RFDZM21teuCMFYx_AROjt-AzUwDBROFww&s",
-//       "name": "Timmy"
-//     }) 
+       const avatarResponse = await axios.post(`${BACKEND_URL}/api/v1/admin/avatar`, {
+            "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQm3RFDZM21teuCMFYx_AROjt-AzUwDBROFww&s",
+            "name": "Timmy"
+        }, {
+            headers: {
+                authorization: `Bearer ${token}`
+            }
+        })
+        console.log("avatarresponse is " + avatarResponse.data.avatarId)
 
-//     avatarId = avatarResponse.data.avatarId
+        avatarId = avatarResponse.data.avatarId;
 
-//   })
-  
-//   test("If User's given avatar_id is not valid to update meatadata", async()=>{
-//     const avatarId = "12312";
-//     const res = await axios.post(`${BACKEND_URL}/api/v1/user/metadata`,{
-//       avatarId
-//     },{
-//       headers: {
-//         "Authorization": `Bearer ${token}`
-//       }
-//     })
-//     expect(res.statusCode.toBe(400))
-//   })
+    })
 
-//   test("If User's given avatar_id is valid to update metadata", async()=>{
-//     const avatarId = "12312";
-//     const res = await axios.post(`${BACKEND_URL}/api/v1/user/metadata`,{
-//       avatarId
-//     },{
-//       headers: {
-//         "Authorization": `Bearer ${token}`
-//       }
-//     })
-//     expect(res.statusCode.toBe(200))
-//   })
+    test("User cant update their metadata with a wrong avatar id", async () => {
+        const response = await axios.post(`${BACKEND_URL}/api/v1/user/metadata`, {
+            avatarId: "123123123"
+        }, {
+            headers: {
+                "authorization": `Bearer ${token}`
+            }
+        })
 
-//   test("If User forget to send auth header to update metadata", async()=>{
-//     const avatarId = "12312";
-//     const res = await axios.post(`${BACKEND_URL}/api/v1/user/metadata`,{
-//       avatarId
-//     })
-//     expect(res.statusCode.toBe(403))
-//   })
+        expect(response.status).toBe(400)
+    })
 
-// })
+    test("User can update their metadata with the right avatar id", async () => {
+        const response = await axios.post(`${BACKEND_URL}/api/v1/user/metadata`, {
+            avatarId
+        }, {
+            headers: {
+                "authorization": `Bearer ${token}`
+            }
+        })
 
-// describe("User avatar information", ()=>{
-//   let avatarId = "";
-//   let token  = "";
-//   let userId;
+        expect(response.status).toBe(200)
+    })
 
-//   beforeAll(async ()=>{
-//     const username = `Navin-${Math.random()}`;
-//     const password = "12323123";
+    test("User is not able to update their metadata if the auth header is not present", async () => {
+        const response = await axios.post(`${BACKEND_URL}/api/v1/user/metadata`, {
+            avatarId
+        })
 
-//     const signupResponse = await axios.post(`${BACKEND_URL}/api/v1/user/signup`,{
-//       username,
-//       password,
-//       type : "admin"
-//     })
+        expect(response.status).toBe(403)
+    })
 
-//     userId = signupResponse.data.userId
+    test("test 3", () => {
+        
+    })
+});
 
-//     const res = await axios.post(`${BACKEND_URL}/api/v1/user/signin`,{
-//       username,
-//       password
-//     })
+describe("User avatar information", ()=>{
+  let avatarId = "";
+  let token  = "";
+  let userId;
 
-//     token = res.data.token
+  beforeAll(async ()=>{
+    const username = `Princy oreo`;
+    const password = "12323123";
 
-//     const avatarResponse = await axios.post(`${BACKEND_URL}/api/v1/admin/avatar`, {
-//       "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQm3RFDZM21teuCMFYx_AROjt-AzUwDBROFww&s",
-//       "name": "Timmy"
-//     },{
-//       headers : {
-//         Authorization : `Bearer ${adminToken}`
-//       }
-//     }) 
+    const signupResponse = await axios.post(`${BACKEND_URL}/api/v1/user/signup`,{
+      username,
+      password,
+      role : "admin"
+    })
 
-//     avatarId = avatarResponse.data.avatarId
+    userId = signupResponse.data.userId
 
-//   })
+    const res = await axios.post(`${BACKEND_URL}/api/v1/user/signin`,{
+      username,
+      password
+    })
 
-//    test("get back avatar information from user", async ()=>{
+    token = res.data.token
 
-//     const res = await axios.post(`${BACKEND_URL}/api/v1/user/metadata/bulk?ids=[${userId}]`);
-//     expect(res.data.avatars.length.toBe(1));
-//     expect(res.data.avatars[0].userId.toBe(userId))
+    const avatarResponse = await axios.post(`${BACKEND_URL}/api/v1/admin/avatar`, {
+      "imageUrl": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQm3RFDZM21teuCMFYx_AROjt-AzUwDBROFww&s",
+      "name": "Timmy"
+    },{
+      headers : {
+        authorization : `Bearer ${token}`
+      }
+    }) 
 
-//    })
+    avatarId = avatarResponse.data.avatarId
 
-//    test("get all the available avatar ", async ()=>{
+  })
 
-//     const res = await axios.post(`${BACKEND_URL}/api/v1/avatars`);
-//     expect(res.data.avatars.not.toBe(0))
-//     const currentAvatar = res.data.avatars.find(x => x.id === avatarId)
-//     expect(currentAvatar).tobedefined()
+   test("get back avatar information from user", async ()=>{
 
-//    })
+    const res = await axios.get(`${BACKEND_URL}/api/v1/user/metadata/bulk?ids=[${userId}]`);
+    expect(res.data.avatars.length).toBe(1);
+    expect(res.data.avatars[0].userId).toBe(userId)
 
-// })
+   })
+
+   test("get all the available avatar ", async ()=>{
+
+    const res = await axios.get(`${BACKEND_URL}/api/v1/avatars`);
+    expect(res.data.avatars).not.toBe(0)
+    const currentAvatar = res.data.avatars.find(x => x.id === avatarId)
+    expect(currentAvatar).tobedefined()
+
+   })
+
+})
 
 // describe("Space information", ()=>{
 //   let adminToken;
@@ -427,7 +435,7 @@ describe("authorization" , ()=>{
 
 // })
 
-// describe("Arena endpoints",()=>{
+// describe("Arena endpoints", ()=>{
 //   let adminToken;
 //   let adminId;
 //   let userToken;
@@ -600,14 +608,10 @@ describe("authorization" , ()=>{
 //     const newRes = await axios.get(`${BACKEND_URL}/api/v1/space/${spaceId}`)
 
 //     expect(newRes.data.elements.length).toBe(3)
-    
 //   })
-
- 
-  
 // })
 
-// describe("Admin endpoints", async ()=>{
+// describe("Admin endpoints",  ()=>{
 //   let adminToken;
 //   let adminId;
 //   let userToken;
@@ -759,9 +763,9 @@ describe("authorization" , ()=>{
 
 // })
 
-// //WebSocket test
+// WebSocket test
 
-// describe("WebSocket tests", async()=>{
+// describe("WebSocket tests", ()=>{
 //   let userId;
 //   let adminId;
 //   let userToken;
@@ -1017,5 +1021,3 @@ describe("authorization" , ()=>{
 //   })
 
 // })
-
-

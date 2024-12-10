@@ -1,5 +1,5 @@
 //zod validation
-import z from "zod"
+import z, { optional } from "zod"
 
 
 export const SignupSchema = z.object({
@@ -31,13 +31,13 @@ export const AddElementSchema = z.object({
 })
 
 export const DeleteElementSchema = z.object({
-    id : z.number()
+    id : z.string()
 })
 
 export const CreateElementSchema = z.object({
     imageUrl: z.string(),
-    width : z.string(),
-    height : z.string(),
+    width : z.number(),
+    height : z.number(),
     static : z.boolean()
 })
 

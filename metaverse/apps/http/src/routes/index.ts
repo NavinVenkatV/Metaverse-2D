@@ -11,6 +11,7 @@ import { JWT_PASSWORD } from "./config";
 export const router = Router();
 
 router.post('/signup',async (req,res)=>{
+    console.log("inside signup")
     const parsedData = SignupSchema.safeParse(req.body)
     if(!parsedData.success){
          res.status(403).json({
@@ -30,6 +31,7 @@ router.post('/signup',async (req,res)=>{
         res.json({
             userId: user.id
         })
+        return
     }catch(e){
         res.status(400).json({
             message : "Something went wrong"
@@ -71,9 +73,9 @@ router.post('/signin',async (req,res)=>{
         },JWT_PASSWORD)
 
         res.json({
-            token : token
+             token
         })
-
+        return
     }catch(e){
         res.status(400).json({
             message : "Something went wrong"
@@ -83,12 +85,27 @@ router.post('/signin',async (req,res)=>{
 
 })
 
-router.get('/avatars',(req,res)=>{
-
+router.get('/avatars',async (req,res)=>{
+    const avatars = await client.avatar.findMany();
+    res.json({
+        Avatars : avatars.map(e=>({
+            id : e.id,
+            imageUrl : e.imageUrl,
+            name : e.name
+        }))
+    })
 })
 
-router.get('/elements',(req,res)=>{
-
+router.get('/elements',async (req,res)=>{
+    const elements = await client.element.findMany();
+    res.json({
+        Elements : elements.map(e=>({
+            imageUrl : e.imageUrl,
+            width : e.width,
+            height : e.height,
+            static : e.static
+        }))
+    })
 })
 
 
