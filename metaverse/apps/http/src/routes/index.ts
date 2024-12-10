@@ -88,7 +88,7 @@ router.post('/signin',async (req,res)=>{
 router.get('/avatars',async (req,res)=>{
     const avatars = await client.avatar.findMany();
     res.json({
-        Avatars : avatars.map(e=>({
+        avatars : avatars.map(e=>({
             id : e.id,
             imageUrl : e.imageUrl,
             name : e.name

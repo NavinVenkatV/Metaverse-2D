@@ -1,4 +1,4 @@
-import { Router } from "express";
+import e, { Router } from "express";
 import { AddElementSchema, CreateElementSchema, CreateSpaceSchema, DeleteElementSchema } from "../types";
 import { userMiddleware } from "../middleware/user";
 import client from "@ui/db/client"
@@ -10,7 +10,6 @@ spaceRouter.post('/',userMiddleware,async (req,res)=>{
     console.log("endopibnt")
     const parsedData = CreateSpaceSchema.safeParse(req.body)
     if (!parsedData.success) {
-        console.log(JSON.stringify(parsedData))
         res.status(400).json({message: "Validation failed"})
         return
     }
@@ -27,7 +26,7 @@ spaceRouter.post('/',userMiddleware,async (req,res)=>{
         res.json({spaceId: space.id})
         return;
     }
-    const map = await client.map.findUnique({
+    const map = await client.map.findFirst({
         where : {
             id : parsedData.data.mapId
         },
@@ -67,7 +66,8 @@ spaceRouter.post('/',userMiddleware,async (req,res)=>{
 })
 
 spaceRouter.delete('/:spaceId',userMiddleware, async(req,res)=>{
-    const space = await client.space.findUnique({
+    console.log("ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo")
+    const space = await client.space.findFirst({
         where : {
             id : req.params.spaceId
         }, select : {
@@ -75,10 +75,13 @@ spaceRouter.delete('/:spaceId',userMiddleware, async(req,res)=>{
         }
     })
     if(!space){
+        console.log('efkkrngfffffffffffffffffffffrrrrrrrrrrrrrrrrrrrrrrrfffffffffffffffffffffffffffff')
         res.status(400).json({message : "Space not found"})
+        return
     }
     if(space?.creatorId != req.userId){
         res.status(403).json({message : "Unauthorized user"})
+        return
     }
     await client.space.delete({
         where : {
@@ -108,8 +111,39 @@ spaceRouter.get('/all',userMiddleware, async (req,res)=>{
     return;
 })
 
-spaceRouter.get('/:spaceId',(req,res)=>{
-
+spaceRouter.get('/:spaceId',userMiddleware,async (req,res)=>{
+    const spaceId = req.params.id;
+    const space = await client.space.findUnique({
+        where : {
+            id : spaceId
+        },include : {
+            elements : {
+                include : {
+                    element : true
+                }
+            },
+        }
+    })
+    if(!space){
+        res.status(400).json({message : "Invalid space Id"})
+        return
+    }
+    res.json({
+        Dimenstions : `${space.width}x${space.height}`,
+        Elements : space.elements.map(e => ({
+            id : e.id ,
+            element : {
+                id : e.element.id,
+                imageUrl : e.element.imageUrl,
+                static : e.element.static,
+                width : e.element.width,
+                height : e.element.height
+            },
+            x : e.x,
+            y : e.y
+        }))
+    })
+    return
 })
 
 spaceRouter.post('/element',userMiddleware, async(req,res)=>{
@@ -147,19 +181,20 @@ spaceRouter.delete('/element',async(req,res)=>{
         res.status(400).json({message  : "Invalid credentials"})
         return
     }
-    const space = await client.space.findUnique({
+    const spaceElements = await client.spaceElements.findUnique({
         where : {
-            id : parsedData.data.spaceId
+            id : parsedData.data.id
+        },include : {
+            space : true
         }
     })
-    if(!space){
-        res.status(400).json({message : "Invalid space Id"})
+    if(spaceElements?.space.creatorId != req.userId){
+        res.status(403).json({message : "Authorization fails"})
         return
     }
     await client.spaceElements.delete({
-        where : {
-            spaceId : parsedData.data.spaceId,
-            elementId : parsedData.data.elementId
-        } 
+        where :{
+            id : parsedData.data.id
+        }
     })
 })
