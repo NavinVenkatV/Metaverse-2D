@@ -11,7 +11,6 @@ import { JWT_PASSWORD } from "./config";
 export const router = Router();
 
 router.post('/signup',async (req,res)=>{
-    console.log("inside signup")
     const parsedData = SignupSchema.safeParse(req.body)
     if(!parsedData.success){
          res.status(403).json({
@@ -25,11 +24,11 @@ router.post('/signup',async (req,res)=>{
             data: {
                 username: parsedData.data.username,
                 password: hashedPassword,
-                role : parsedData.data.role === "admin" ? "Admin" : "User"
+                role : parsedData.data.type === "admin" ? "Admin" : "User"
             }
         })
         res.json({
-            userId: user.id
+            id: user.id
         })
         return
     }catch(e){
@@ -73,7 +72,7 @@ router.post('/signin',async (req,res)=>{
         },JWT_PASSWORD)
 
         res.json({
-             token
+            token
         })
         return
     }catch(e){

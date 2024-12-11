@@ -1,11 +1,12 @@
-import { raw, Router } from "express";
+import { Router } from "express";
 import { adminMiddleware } from "../middleware/admin";
 import { CreateAvatarSchema, CreateElementSchema, CreateMapSchema, UpdateElementSchema } from "../types";
 import client from "@ui/db/client"
 
 export const adminRouter = Router();
 
-adminRouter.post('/element',adminMiddleware,async (req,res)=>{
+adminRouter.post('/element',async (req,res)=>{
+    console.log("inside creatting the element ---------------------------444444444444")
     const parsedData = CreateElementSchema.safeParse(req.body)
     if(!parsedData.success){
         res.status(400).json({message : "Invalid Inputs"})
@@ -20,7 +21,7 @@ adminRouter.post('/element',adminMiddleware,async (req,res)=>{
         }
     })
     res.json({
-        message : element.id
+        id : element.id
     })
 })
 
@@ -76,6 +77,7 @@ adminRouter.post("/map", async (req, res) => {
             }
         }
     })
+    console.log(parsedData.data.defaultElements)
 
     res.json({
         id: map.id

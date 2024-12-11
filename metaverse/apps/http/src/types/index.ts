@@ -1,11 +1,11 @@
 //zod validation
-import z, { optional } from "zod"
+import z from "zod"
 
 
 export const SignupSchema = z.object({
     username : z.string(),
     password : z.string(),
-    role : z.enum(['admin','user'])
+    type : z.enum(['admin','user'])
 })
 
 export const SigninSchema = z.object({

@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken"
 import { JWT_PASSWORD } from "../routes/config";
 import { NextFunction,  Request, Response } from "express";
 
-export const adminMiddleware = (req: Request, res: Response, next: NextFunction)=>{
+export const adminMiddleware = (req: Request, res: Response, next: NextFunction)=>{ 
     const headers = req.headers['authorization'];
     if(!headers){
         res.status(403).json({

@@ -2,7 +2,8 @@ import jwt from "jsonwebtoken"
 import { JWT_PASSWORD } from "../routes/config";
 import { NextFunction,  Request, Response } from "express";
 
-export const userMiddleware = (req: Request, res: Response, next: NextFunction)=>{
+export const userMiddleware = async (req: Request, res: Response, next: NextFunction)=>{
+    console.log("inside the middleware")
     const headers = req.headers['authorization'];
     if(!headers){
         res.status(403).json({
@@ -23,7 +24,7 @@ export const userMiddleware = (req: Request, res: Response, next: NextFunction)=
         next();
     }catch(e){
         res.status(400).json({
-            message : "Something went wrong"
+            message : "Something went wrong da mavane"
         })
         return;
     }
