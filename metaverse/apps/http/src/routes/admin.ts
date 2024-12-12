@@ -4,56 +4,59 @@ import { CreateAvatarSchema, CreateElementSchema, CreateMapSchema, UpdateElement
 import client from "@ui/db/client"
 
 export const adminRouter = Router();
+adminRouter.use(adminMiddleware)
 
-adminRouter.post('/element',async (req,res)=>{
-    console.log("inside creatting the element ---------------------------444444444444")
+adminRouter.post("/element", async (req, res) => {
     const parsedData = CreateElementSchema.safeParse(req.body)
-    if(!parsedData.success){
-        res.status(400).json({message : "Invalid Inputs"})
+    if (!parsedData.success) {
+        res.status(400).json({message: "Validation failed"})
         return
     }
+
     const element = await client.element.create({
-        data : {
-            imageUrl : parsedData.data?.imageUrl,
-            width : parsedData.data?.width,
-            height : parsedData.data?.height,
-            static : parsedData.data?.static
+        data: {
+            width: parsedData.data.width,
+            height: parsedData.data.height,
+            static: parsedData.data.static,
+            imageUrl: parsedData.data.imageUrl,
         }
     })
+
     res.json({
-        id : element.id
+        id: element.id
     })
 })
 
-adminRouter.put('/element/:elementId',adminMiddleware, async (req,res)=>{
-    const parsedData = UpdateElementSchema.safeParse(req.body);
-    if(!parsedData.success){
-        res.status(400).json({message : "invalid input"})
+adminRouter.put("/element/:elementId", (req, res) => {
+    const parsedData = UpdateElementSchema.safeParse(req.body)
+    if (!parsedData.success) {
+        res.status(400).json({message: "Validation failed"})
         return
     }
-    await client.element.update({
-        where : {
-            id : req.params.elementId
+    client.element.update({
+        where: {
+            id: req.params.elementId
         },
-        data : {
-            imageUrl : parsedData.data.imageUrl
+        data: {
+            imageUrl: parsedData.data.imageUrl
         }
     })
-    res.json({message : "Element updated successfully"})
+    res.json({message: "Element updated"})
 })
 
-adminRouter.post('/avatar',async(req,res)=>{
-    const parsedData = CreateAvatarSchema.safeParse(req.body);
-    if(!parsedData.success)(
-        res.status(400).json({message : "Invalid input"})
-    )
-    const avatar  = await client.avatar.create({
-        data  : {
-            imageUrl  : parsedData.data?.imageUrl,
-            name : parsedData.data?.name
+adminRouter.post("/avatar", async (req, res) => {
+    const parsedData = CreateAvatarSchema.safeParse(req.body)
+    if (!parsedData.success) {
+        res.status(400).json({message: "Validation failed"})
+        return
+    }
+    const avatar = await client.avatar.create({
+        data: {
+            name: parsedData.data.name,
+            imageUrl: parsedData.data.imageUrl
         }
     })
-    res.status(200).json({avatarId  : avatar.id})
+    res.json({avatarId: avatar.id})
 })
 
 adminRouter.post("/map", async (req, res) => {
@@ -77,7 +80,6 @@ adminRouter.post("/map", async (req, res) => {
             }
         }
     })
-    console.log(parsedData.data.defaultElements)
 
     res.json({
         id: map.id

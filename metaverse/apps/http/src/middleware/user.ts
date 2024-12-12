@@ -2,30 +2,23 @@ import jwt from "jsonwebtoken"
 import { JWT_PASSWORD } from "../routes/config";
 import { NextFunction,  Request, Response } from "express";
 
-export const userMiddleware = async (req: Request, res: Response, next: NextFunction)=>{
-    console.log("inside the middleware")
-    const headers = req.headers['authorization'];
-    if(!headers){
-        res.status(403).json({
-            message : "Inavlid authorizatioin"
-        })
-        return;
+export const userMiddleware = (req: Request, res: Response, next: NextFunction) => {
+    const header = req.headers["authorization"];
+    const token = header?.split(" ")[1];
+    console.log(req.route.path)
+        console.log(token)
+    
+    if (!token) {
+        res.status(403).json({message: "Unauthorized"})
+        return
     }
-    const token = headers?.split(' ')[1];
-    try{
-        const decoded = jwt.verify(token,JWT_PASSWORD) as {userId : string, role : string}
-        if(!decoded){
-            res.status(400).json({
-                message : "Invalid authorization"
-            })
-            return;
-        }
-        req.userId = decoded.userId;
-        next();
-    }catch(e){
-        res.status(400).json({
-            message : "Something went wrong da mavane"
-        })
-        return;
+
+    try {
+        const decoded = jwt.verify(token, JWT_PASSWORD) as { role: string, userId: string }
+        req.userId = decoded.userId
+        next()
+    } catch(e) {
+        res.status(401).json({message: "Unauthorized"})
+        return
     }
 }
