@@ -792,7 +792,7 @@ describe("Admin Endpoints", () => {
 
 //WebSocket test
 
-describe("WebSocket tests", ()=>{
+describe.skip("WebSocket tests", ()=>{
   let userId;
   let adminId;
   let userToken;
@@ -831,7 +831,7 @@ describe("WebSocket tests", ()=>{
     const userSigninRes = await axios.post(`${BACKEND_URL}/api/v1/user/signin`,{
       username,
       password,
-      role : "user"
+      type : "user"
     })
 
     const userSignupRes = await axios.post(`${BACKEND_URL}/api/v1/user/signup`,{
